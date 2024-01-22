@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Espresso Shot Tracker</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+        }
+        button, label[for="importFile"] {
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-right: 10px;
+            display: inline-block;
+            font-size: 14px;
+        }
+        button:hover, label[for="importFile"]:hover {
+            background-color: #45a049;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Espresso Shot Tracker</h2>
+
+    <label for="doseIn">Dose In (g):</label>
+    <input type="text" id="doseIn">
+
+    <label for="doseOut">Dose Out (g):</label>
+    <input type="text" id="doseOut">
+
+    <label for="brewTime">Brew Time (s):</label>
+    <input type="text" id="brewTime">
+
+    <label for="grinderSetting">Grinder Setting:</label>
+    <input type="text" id="grinderSetting">
+
+    <label for="tastingNotes">Tasting Notes:</label>
+    <input type="text" id="tastingNotes">
+
+    <label for="coffeeNotes">Coffee Notes:</label>
+    <input type="text" id="coffeeNotes">
+
+    <button onclick="trackEspresso()">Track Espresso Shot</button>
+    <button onclick="exportTable()">Export to JSON</button>
+    <input type="file" id="importFile" accept=".json" onchange="importTable()">
+    <label for="importFile">Import JSON</label>
+    <button onclick="saveToBrowser()">Save to Browser</button>
+    <button onclick="loadFromBrowser()">Load from Browser</button>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Dose In (g)</th>
+                <th>Dose Out (g)</th>
+                <th>Brew Time (s)</th>
+                <th>Grinder Setting</th>
+                <th>Tasting Notes</th>
+                <th>Coffee Notes</th>
+            </tr>
+        </thead>
+        <tbody id="shotTableBody"></tbody>
+    </table>
+
+    <script>
+        function trackEspresso() {
+            var doseIn = document.getElementById('doseIn').value;
+            var doseOut = document.getElementById('doseOut').value;
+            var brewTime = document.getElementById('brewTime').value;
+            var grinderSetting = document.getElementById('grinderSetting').value;
+            var tastingNotes = document.getElementById('tastingNotes').value;
+            var coffeeNotes = document.getElementById('coffeeNotes').value;
+
+            if (doseIn && doseOut && brewTime && grinderSetting && tastingNotes && coffeeNotes) {
+                var tableBody = document.getElementById('shotTableBody');
+                var newRow = tableBody.insertRow(tableBody.rows.length);
+
+                var cell1 = newRow.insertCell(0);
+                var cell2 = newRow.insertCell(1);
+                var cell3 = newRow.insertCell(2);
+                var cell4 = newRow.insertCell(3);
+                var cell5 = newRow.insertCell(4);
+                var cell6 = newRow.insertCell(5);
+
+                cell1.innerHTML = doseIn;
+                cell2.innerHTML = doseOut;
+                cell3.innerHTML = brewTime;
+                cell4.innerHTML = grinderSetting;
+                cell5.innerHTML = tastingNotes;
+                cell6.innerHTML = coffeeNotes;
+
+                // Clear input fields after tracking
+                document.getElementById('doseIn').value = '';
+                document.getElementById('doseOut').value = '';
+                document.getElementById('brewTime').value = '';
+                document.getElementById('grinderSetting').value = '';
+                document.getElementById('tastingNotes').value = '';
+                document.getElementById('coffeeNotes').value = '';
+            } else {
+                alert('Please fill in all fields.');
+            }
+        }
+
+        function exportTable() {
+            var tableData = [];
+            var tableRows = document.getElementById('shotTableBody').rows;
+
+            for (var i = 0; i < tableRows.length; i++) {
+                var rowData = {
+                    "Dose In (g)": tableRows[i].cells[0].innerHTML,
+                    "Dose Out (g)": tableRows[i].cells[1].innerHTML,
+                    "Brew Time (s)": tableRows[i].cells[2].innerHTML,
+                    "Grinder Setting": tableRows[i].cells[3].innerHTML,
+                    "Tasting Notes": tableRows[i].cells[4].innerHTML,
+                    "Coffee Notes": tableRows[i].cells[5].innerHTML
+                };
+                tableData.push(rowData);
+            }
+
+            var jsonContent = JSON.stringify(tableData);
+            var blob = new Blob([jsonContent], { type: 'application/json' });
+            var a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'espresso_shots.json';
+            a.click();
+        }
+
+        function importTable() {
+            var input = document.getElementById('importFile');
+            var file = input.files[0];
+
+            if (file) {
+                var reader = new FileReader();
+                reader.onload = function (e) {
+                    var importedData = JSON.parse(e.target.result);
+
+                    var tableBody = document.getElementById('shotTableBody');
+                    importedData.forEach(function (rowData) {
+                        var newRow = tableBody.insertRow(tableBody.rows.length);
+
+                        var cell1 = newRow.insertCell(0);
+                        var cell2 = newRow.insertCell(1);
+                        var cell3 = newRow.insertCell(2);
+                        var cell4 = newRow.insertCell(3);
+                        var cell5 = newRow.insertCell(4);
+                        var cell6 = newRow.insertCell(5);
+
+                        cell1.innerHTML = rowData["Dose In (g)"];
+                        cell2.innerHTML = rowData["Dose Out (g)"];
+                        cell3.innerHTML = rowData["Brew Time (s)"];
+                        cell4.innerHTML = rowData["Grinder Setting"];
+                        cell5.innerHTML = rowData["Tasting Notes"];
+                        cell6.innerHTML = rowData["Coffee Notes"];
+                    });
+
+                    input.value = ''; // Clear the file input after importing
+                };
+
+                reader.readAsText(file);
+            }
+        }
+
+        function saveToBrowser() {
+            var tableData = [];
+            var tableRows = document.getElementById('shotTableBody').rows;
+
+            for (var i = 0; i < tableRows.length; i++) {
+                var rowData = {
+                    "Dose In (g)": tableRows[i].cells[0].innerHTML,
+                    "Dose Out (g)": tableRows[i].cells[1].innerHTML,
+                    "Brew Time (s)": tableRows[i].cells[2].innerHTML,
+                    "Grinder Setting": tableRows[i].cells[3].innerHTML,
+                    "Tasting Notes": tableRows[i].cells[4].innerHTML,
+                    "Coffee Notes": tableRows[i].cells[5].innerHTML
+                };
+                tableData.push(rowData);
+            }
+
+            var jsonContent = JSON.stringify(tableData);
+            document.cookie = 'espresso_shots=' + encodeURIComponent(jsonContent);
+        }
+
+        function loadFromBrowser() {
+            var cookieValue = document.cookie.replace(/(?:(?:^|.*;\s*)espresso_shots\s*=\s*([^;]*).*$)|^.*$/, '$1');
+
+            if (cookieValue) {
+                var importedData = JSON.parse(decodeURIComponent(cookieValue));
+
+                var tableBody = document.getElementById('shotTableBody');
+                // Clear existing table
+                while (tableBody.firstChild) {
+                    tableBody.removeChild(tableBody.firstChild);
+                }
+
+                importedData.forEach(function (rowData) {
+                    var newRow = tableBody.insertRow(tableBody.rows.length);
+
+                    var cell1 = newRow.insertCell(0);
+                    var cell2 = newRow.insertCell(1);
+                    var cell3 = newRow.insertCell(2);
+                    var cell4 = newRow.insertCell(3);
+                    var cell5 = newRow.insertCell(4);
+                    var cell6 = newRow.insertCell(5);
+
+                    cell1.innerHTML = rowData["Dose In (g)"];
+                    cell2.innerHTML = rowData["Dose Out (g)"];
+                    cell3.innerHTML = rowData["Brew Time (s)"];
+                    cell4.innerHTML = rowData["Grinder Setting"];
+                    cell5.innerHTML = rowData["Tasting Notes"];
+                    cell6.innerHTML = rowData["Coffee Notes"];
+                });
+            } else {
+                alert('No saved data found in browser cookies.');
+            }
+        }
+    </script>
+
+</body>
+</html>
