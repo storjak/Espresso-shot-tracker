@@ -5,4 +5,4 @@ I wanted to write an app but didn't have much time, but also wanted to experimen
 
 But yeah it's free use, not like I really wrote it, produced at best, really.  If you have any feature suggestions or issues just post an issue.
 
-See it in action, here.
+See it in action, [here](https://storjak.github.io/espresso-shot-tracker/).
